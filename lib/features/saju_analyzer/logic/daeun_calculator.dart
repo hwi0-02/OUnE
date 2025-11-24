@@ -173,7 +173,9 @@ class DaeunCalculator {
       if (sajuMonthIndex != null) {
         if (direction == DaeunDirection.forward) {
           // Get NEXT solar term
-          final nextMonthIndex = (sajuMonthIndex + 1) % 12;
+          // Fix: Handle 1-based indexing (1-12) correctly
+          // 11 -> 12, 12 -> 1
+          final nextMonthIndex = (sajuMonthIndex % 12) + 1;
           final nextTerm = _getNextSolarTermDate(birthDate, nextMonthIndex);
           if (nextTerm != null) {
             final diff = nextTerm.difference(birthDate).inDays;
