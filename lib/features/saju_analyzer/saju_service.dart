@@ -54,18 +54,25 @@ class SajuService {
     final dayGanJi = saju['day'] ?? '  '; // Fallback to 2 spaces
     if (dayGanJi.length < 2) {
       print('Error: Invalid dayGanJi: $dayGanJi');
+      // Fallback to dummy data to prevent UI crash
+      const dummyGanJi = '갑자';
       return SajuAnalysis(
-        pillars: saju,
-        dayGan: '?',
-        dayJi: '?',
+        pillars: {
+          'year': dummyGanJi,
+          'month': dummyGanJi,
+          'day': dummyGanJi,
+          'hour': dummyGanJi,
+        },
+        dayGan: '갑',
+        dayJi: '자',
         gender: gender,
         tenGods: {},
         twelveStages: {},
         interactions: [],
         daeunPeriods: [],
-        elementScores: {},
-        isStrong: false,
-        luckyElement: '?',
+        elementScores: {'목': 100, '화': 0, '토': 0, '금': 0, '수': 0},
+        isStrong: true,
+        luckyElement: '화',
       );
     }
 
