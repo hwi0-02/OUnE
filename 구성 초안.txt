@@ -1,0 +1,130 @@
+1. 앱 개요 & 컨셉
+
+앱 이름: "오운이" (심플, 검색 최적화. 대안: "오운이 운세" – 앱스토어 검색 '운세' 키워드 타겟)
+슬로건: "매일 카톡처럼 귀여운 오운이가 나한테만 운세 말해줘 ♡"
+타겟 유저 페르소나 (Deep think: 2025년 MZ 세대 중심, 리뷰 분석 기반):
+주요: 18~29세 여성 (70%), 연애/직장 스트레스 많음. 인스타/틱톡 중독, 귀여운 캐릭터(카카오 프렌즈 스타일) 좋아함. 하루 1~2회 앱 열음.
+부: 18~35세 남성 (30%), 재물/학업운 관심. 솔직/쌍욕 스타일 선호.
+행동 패턴: 아침 푸시로 앱 열기 → 운세 보기 → 공유 → 프리미엄 전환 (전환율 목표 8%, 리뷰: "귀여워서 돈 냄").
+통증 포인트: 기존 앱은 "뻔하고 재미없음" (웹 결과: 점신 리뷰 "정확하지만 지루").
+
+차별화 포인트 (경쟁 앱 vs 우리):
+경쟁: 점신(무료 사주, 상담, 평점 4.5, 다운 1천만+), 알고(부적 추천, AI 운세, 평점 4.4), SaJu(전통+타로, UI 직관적).
+약점: 텍스트 중심, 캐릭터 없음, 공유 시 안 예쁨, 스타일 단일 (리뷰: "할머니 앱 같음").
+
+우리: 손그림 '오운이' 캐릭터 + 카톡 UI + 4가지 말투 선택 + 미니게임. (Deep think: 이로 바이럴 3배, 유지율 50%↑ 예상. AI 앱 트렌드 반영해 텍스트 동적 생성.)
+
+
+2. 기능 상세 (MVP + 확장)
+MVP: 4주 개발, 기본 운세+캐릭터+공유. 확장: 2주 추가.
+
+온보딩 (30초 이내):
+화면1: 로고 + "오운이가 매일 찾아갈게요 ♡"
+화면2: 생년월일 + 성별 + 시간 (모름 선택 가능) → 사주 기본 계산 (라이브러리: lunar-solar-converter).
+화면3: 오운이 스타일 선택 (4가지 카드, 미리보기 말풍선 포함):
+애교 폭발: "야야야 너 오늘 연애운 미쳤어 ㄹㅇ ♡♡♡"
+차분 따뜻: "오늘은 네 마음이 전해질 수 있는 날이야. 조용히 용기 내서..."
+솔직 쌍욕: "야 너 오늘 연애운 존나 좋거든? 썸남한테 왜 안 읽씹..."
+할매 스타일: "우리 막내야~ 오늘은 인연이 찾아오는 날이구나~"
+
+화면4: 알림 허용 → 홈으로.
+
+홈 화면 (카톡 채팅창 스타일):
+오운이 프로필 (손그림 이미지) + 말풍선 순차 출력 (애니메이션: 타이핑 효과).
+운세 종류: 총운(무료), 연애운(무료), 재물/직장/건강운(프리미엄), 타로 1카드(무료, 78장 이미지 랜덤 + 해석).
+프리미엄 추가: 이번 주 미리보기, 럭키 컬러/숫자, 매달 손편지 이미지.
+
+중독성 기능:
+가짜 채팅: 입력창에서 "오운아 데이트 어때?" → 미리 100개 답변 랜덤 (스타일별 DB 저장).
+테마 변경: 운세 좋음 → 핑크 배경, 나쁨 → 블루 (Dynamic Theme in Flutter).
+복수 미니게임: 나쁜 운세 시 "오운이 머리 뽑기" (터치 게임, 5초, 점수 공유).
+스트릭: 연속 체크인 → 7일 시 "행운 부적" 이미지 unlock.
+
+공유 & 바이럴:
+버튼: 말풍선 전체를 예쁜 이미지로 저장 (워터마크: "오운이 앱에서 봤어!").
+인스타/카톡 공유 API 연동 → "오운이 오늘 나한테 이 말 함 ㅋㅋ" 템플릿.
+
+설정 화면:
+스타일 변경, 푸시 설정, 프리미엄 구매, 데이터 삭제 (프라이버시 준수).
+
+확장 아이디어 (v1.1):
+AI 개인화: Grok/Claude 무료 API로 사용자 입력 기반 커스텀 운세 생성 (예: "오늘 직장운 어때?" → API 호출).
+다국어: 영어 버전 (웹 결과: SaJu처럼 해외 수요 있음).
+커뮤니티: 운세 공유 보드 (Firebase Realtime DB).
+
+
+3. 기술 스택 & 아키텍처 (1인 개발 최적화, 비용 0~5만 원/월)
+
+프론트: Flutter (iOS+Android 한 번에, 애니메이션 쉽음).
+백엔드: Firebase (무료 티어: 1GB 스토리지, 10GB 다운로드 충분).
+Auth: Google/Apple/Kakao 로그인.
+Firestore DB 스키마:
+Users: { uid, birth_date, gender, style: 'aegyo'|'calm'|'straight'|'grandma', streak_count }
+Fortunes: { date: '2025-11-19', type: 'total', styles: { aegyo: '텍스트', calm: '텍스트', ... } } – 365일×운세종류×4스타일 = ~5,000 문서 (저비용).
+Tarot: { card_id: 1~78, image_url, interpretations: { aegyo: '...', ... } }
+
+Remote Config: 매일 운세 업데이트 (관리자 콘솔에서 수정).
+
+기타 라이브러리:
+RevenueCat: 인앱 결제 (무료 티어).
+AdMob: 광고.
+Share Plus: 공유.
+Flutter Animate: 타이핑 효과.
+HTTP: AI API 호출 (옵션).
+
+아키텍처 다이어그램 (텍스트 버전):textUser Device (Flutter App)
+├── Onboarding → Firebase Auth → DB Save
+├── Home → Fetch Fortune from Firestore (by date & style)
+│   ├── Chat UI (ListView with Bubbles)
+│   └── MiniGame (GestureDetector)
+├── Settings → RevenueCat Purchase
+└── Push → Firebase Cloud Messaging (매일 7시 스케줄)
+코드 스니펫 예시 (Flutter 홈 화면):Dartclass HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String userStyle = 'aegyo'; // DB에서 불러옴
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('fortunes').doc(DateTime.now().toIso8601String().split('T')[0]).get(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            var fortune = snapshot.data![userStyle]; // 스타일별 텍스트
+            return ListView(
+              children: [Bubble(text: fortune['total'], avatar: 'assets/owooni_happy.png')],
+            );
+          }
+          return CircularProgressIndicator();
+        },
+      ),
+    );
+  }
+}(이걸 베이스로 확장하세요.)
+
+4. 개발 로드맵 (6~8주, 1인 기준)
+
+주 1 (준비): Flutter 설치, Firebase 셋업, 오운이 캐릭터 50장 의뢰 (Fiverr/국내 프리랜서 50~100만 원). 운세 텍스트 1,460개 생성 (ChatGPT 프롬프트: "한국어 애교 스타일 운세 365개 만들어줘").
+주 2~3 (MVP 코어): 온보딩 + 홈 화면 + DB 연동 + 스타일 선택.
+주 4 (중독 기능): 가짜 채팅 + 미니게임 + 공유.
+주 5 (폴리싱): 애니메이션 + 위젯 + 푸시 + 광고/결제.
+주 6 (테스트): iOS/Android 에뮬레이터 테스트, 버그 픽스, 베타 유저(친구 10명) 피드백.
+주 7~8 (출시 준비): 앱스토어/플레이스토어 제출, 마케팅 콘텐츠 제작.
+총 비용: Firebase 0원 (초기), RevenueCat 0원, 캐릭터 100만 원.
+
+5. 수익화 & 마케팅
+
+수익: 무료(광고) + 프리미엄(월 2,900원/연 19,900원). 목표: 출시 1개월 MAU 10만, 전환 8% → 월 2,300만 원 + 광고 500만 원.
+마케팅 (0원 스타트): 인스타 릴스 "오운이 오늘 운세" 매일 업로드, 더쿠/인스티즈 후기 글, 카톡 오픈채팅 "오운이 팬클럽". (Deep think: 바이럴 중심, 1개월 후 ASO 최적화.)
+KPI: DAU 5만, 리텐션 40% (캐릭터 덕분).
+
+6. 잠재적 위험 & 대안
+
+법적: 운세는 "엔터테인먼트"로 명시 (앱 설명: "재미로 보세요"). 과장 피함.
+프라이버시: 생년월일 암호화 저장, 삭제 기능 필수 (GDPR 준수).
+수익 실패: 무료 버전 강력하게 → 광고 중점.
+경쟁: 상위 앱 업데이트 시 모니터링 (웹 검색처럼 주기적 체크).
