@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:app_project/core/data/monthly_solar_terms_data.dart';
+import 'package:app_project/core/data/extended_ipchun_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,9 @@ void main() async {
 
   // Initialize Solar Terms Data
   await MonthlySolarTermsData.initialize();
+  
+  // Initialize Ipchun Data
+  await ExtendedIpchunData.initialize();
 
   runApp(const ProviderScope(child: MyApp()));
 }

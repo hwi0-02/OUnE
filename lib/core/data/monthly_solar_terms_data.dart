@@ -24,16 +24,19 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
 class MonthlySolarTermsData {
-  // 기존의 static final Map<int, Map<int, List<int>>> data = {...} 삭제하거나 빈 맵으로 초기화
+  /// Solar terms data loaded from JSON file
+  /// Format: year -> month -> [day, hour, minute]
   static Map<int, Map<int, List<int>>> data = {};
 
-  /// 앱 시작 시 호출하여 100년 치 데이터를 메모리에 올리는 함수
+  /// Initialize solar terms data from JSON file
+  /// Should be called once at app startup before any calculations
+  /// Loads 100 years of solar term data into memory
   static Future<void> initialize() async {
     try {
-      // 1. JSON 파일 읽기
+      // Load JSON file from assets
       final String jsonString = await rootBundle.loadString('assets/json/solar_terms.json');
       
-      // 2. 파싱 (Map<String, dynamic> -> Map<int, Map<int, List<int>>> 변환)
+      // Parse JSON and convert to typed Map structure
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       
       jsonMap.forEach((yearKey, monthMap) {
@@ -42,7 +45,6 @@ class MonthlySolarTermsData {
         
         (monthMap as Map<String, dynamic>).forEach((monthKey, termList) {
           int month = int.parse(monthKey);
-          // JSON 리스트를 List<int>로 변환
           yearData[month] = (termList as List).map((e) => e as int).toList();
         });
         
@@ -52,7 +54,7 @@ class MonthlySolarTermsData {
       print('✅ 절기 데이터 로딩 완료: ${data.length}년치');
     } catch (e) {
       print('❌ 절기 데이터 로딩 실패: $e');
-      // 실패 시 비상용 하드코딩 데이터라도 로드하거나 에러 처리
+      // In case of failure, app will fall back to approximate calculations
     }
   }
   

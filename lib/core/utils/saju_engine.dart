@@ -28,25 +28,8 @@ class SajuEngine {
     '해': '수', '자': '수',
   };
 
-  // Extended Ipchun Data (1950-2050) is now in ExtendedIpchunData class
-  // Legacy data kept for reference only
-  @Deprecated('Use ExtendedIpchunData instead')
-  static final Map<int, List<int>> ipchunData = {
-    2020: [2, 4, 17],
-    2021: [2, 3, 22],
-    2022: [2, 4, 4],
-    2023: [2, 4, 10],
-    2024: [2, 4, 16],
-    2025: [2, 3, 23],
-    2026: [2, 4, 5],
-    2027: [2, 4, 11],
-    2028: [2, 4, 17],
-    2029: [2, 3, 22],
-    2030: [2, 4, 4],
-  };
-
   // Solar terms (Jeol-gi) approximate start days (Month 1 to 12)
-  // Fallback for years not in ipchunData
+  // Fallback for years not in extended data
   static const List<int> solarTermDays = [
     6,  // Sohan (Jan)
     4,  // Ipchun (Feb) - Start of Year in Saju
@@ -253,9 +236,8 @@ class SajuEngine {
   /// Checks if the date is near a solar term boundary (±1 day)
   static bool isSolarTermBoundary(DateTime date) {
     // Check if within 1 day of Ipchun
-    if (ipchunData.containsKey(date.year)) {
-      final ipchun = ipchunData[date.year]!;
-      final ipchunDate = DateTime(date.year, ipchun[0], ipchun[1]);
+    final ipchunDate = ExtendedIpchunData.getIpchunDate(date.year);
+    if (ipchunDate != null) {
       final diff = date.difference(ipchunDate).inDays.abs();
       if (diff <= 1) return true;
     }
