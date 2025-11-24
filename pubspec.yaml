@@ -40,9 +40,21 @@ dependencies:
     sdk: flutter
 
 # =========================================================
-# FLUTTER 관련 설정 (들여쓰기가 매우 중요합니다!)
+# FLUTTER 관련 설정
 # =========================================================
-        - asset: assets/fonts/PretendardStd-Regular.otf # <--- fonts: 에서 8칸 들여쓰기
+flutter:
+  uses-material-design: true
+
+  # 1. 자산(Assets) 등록
+  assets:
+    - assets/json/  # <--- [필수] 이 줄이 있어야 JSON 파일을 읽을 수 있습니다!
+    - assets/images/
+
+  # 2. 폰트 등록
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/PretendardStd-Regular.otf
         - asset: assets/fonts/PretendardStd-Bold.otf
           weight: 700
         - asset: assets/fonts/PretendardStd-Medium.otf
