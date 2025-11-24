@@ -8,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:app_project/core/data/monthly_solar_terms_data.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -21,6 +23,9 @@ void main() async {
     url: AppConstants.supabaseUrl,
     anonKey: AppConstants.supabaseAnonKey,
   );
+
+  // Initialize Solar Terms Data
+  await MonthlySolarTermsData.initialize();
 
   runApp(const ProviderScope(child: MyApp()));
 }

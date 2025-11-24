@@ -42,20 +42,6 @@ dependencies:
 # =========================================================
 # FLUTTER 관련 설정 (들여쓰기가 매우 중요합니다!)
 # =========================================================
-
-flutter: # <--- dev_dependencies와 같은 레벨 (0칸)
-  uses-material-design: true
-
-  # 이미지 및 .env 파일 등록
-  assets: # <--- flutter에서 2칸 들여쓰기
-    - assets/images/
-    - assets/icons/
-    - .env # <--- 프로젝트 루트의 환경변수 파일
-
-  # 폰트 설정
-  fonts: # <--- flutter에서 2칸 들여쓰기
-    - family: Pretendard # <--- fonts에서 4칸 들여쓰기
-      fonts: # <--- - family: 에서 6칸 들여쓰기
         - asset: assets/fonts/PretendardStd-Regular.otf # <--- fonts: 에서 8칸 들여쓰기
         - asset: assets/fonts/PretendardStd-Bold.otf
           weight: 700

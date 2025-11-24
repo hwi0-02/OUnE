@@ -20,42 +20,41 @@
 /// 11. Daeseol (大雪) - 255° - Start of Ja month (子月)
 /// 12. Sohan (小寒) - 285° - Start of Chuk month (丑月)
 
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+
 class MonthlySolarTermsData {
-  /// Sample data for 2024 (can be expanded to cover 1950-2050)
-  /// Month index: 1=Yin(Feb), 2=Myo(Mar), ..., 12=Chuk(Jan of next year)
-  static final Map<int, Map<int, List<int>>> data = {
-    2024: {
-      1:  [2, 4, 16, 27],   // Ipchun (Yin month start)
-      2:  [3, 5, 10, 23],   // Gyeongchip (Myo month start)
-      3:  [4, 4, 15, 2],    // Cheongmyeong (Jin month start)
-      4:  [5, 5, 8, 10],    // Ipha (Sa month start)
-      5:  [6, 5, 12, 10],   // Mangjong (O month start)
-      6:  [7, 6, 22, 44],   // Soseo (Mi month start)
-      7:  [8, 7, 9, 9],     // Ipchu (Sin month start)
-      8:  [9, 7, 11, 11],   // Baengno (Yu month start)
-      9:  [10, 8, 2, 15],   // Hallo (Sul month start)
-      10: [11, 7, 6, 20],   // Ipdong (Hae month start)
-      11: [12, 6, 23, 17],  // Daeseol (Ja month start)
-      12: [1, 6, 5, 12],    // Sohan of next year (Chuk month start)
-    },
-    2025: {
-      1:  [2, 3, 22, 7],
-      2:  [3, 5, 16, 7],
-      3:  [4, 4, 20, 49],
-      4:  [5, 5, 13, 57],
-      5:  [6, 5, 17, 57],
-      6:  [7, 7, 4, 31],
-      7:  [8, 7, 14, 56],
-      8:  [9, 7, 16, 58],
-      9:  [10, 8, 8, 2],
-      10: [11, 7, 12, 7],
-      11: [12, 7, 5, 5],
-      12: [1, 5, 17, 55],  // 2025 Sohan (Jan 5)
-    },
-    2026: {
-      12: [1, 5, 23, 1], // 2026 Sohan
-    },
-  };
+  // 기존의 static final Map<int, Map<int, List<int>>> data = {...} 삭제하거나 빈 맵으로 초기화
+  static Map<int, Map<int, List<int>>> data = {};
+
+  /// 앱 시작 시 호출하여 100년 치 데이터를 메모리에 올리는 함수
+  static Future<void> initialize() async {
+    try {
+      // 1. JSON 파일 읽기
+      final String jsonString = await rootBundle.loadString('assets/json/solar_terms.json');
+      
+      // 2. 파싱 (Map<String, dynamic> -> Map<int, Map<int, List<int>>> 변환)
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      
+      jsonMap.forEach((yearKey, monthMap) {
+        int year = int.parse(yearKey);
+        Map<int, List<int>> yearData = {};
+        
+        (monthMap as Map<String, dynamic>).forEach((monthKey, termList) {
+          int month = int.parse(monthKey);
+          // JSON 리스트를 List<int>로 변환
+          yearData[month] = (termList as List).map((e) => e as int).toList();
+        });
+        
+        data[year] = yearData;
+      });
+      
+      print('✅ 절기 데이터 로딩 완료: ${data.length}년치');
+    } catch (e) {
+      print('❌ 절기 데이터 로딩 실패: $e');
+      // 실패 시 비상용 하드코딩 데이터라도 로드하거나 에러 처리
+    }
+  }
   
   /// Get solar term date for a specific year and month
   /// [year] - Gregorian year
