@@ -154,7 +154,9 @@ class TenGodCalculator {
       case 'generated':
         return sameYinYang ? TenGod.jeongIn : TenGod.pyeonIn;
       default:
-        throw ArgumentError('Invalid relationship: $relationship');
+        // Log error and return default to prevent crash
+        print('Error: Invalid relationship: $relationship (Day: $dayGan, Target: $targetGan)');
+        return TenGod.biGyeon; // Default fallback
     }
   }
   

@@ -13,6 +13,11 @@ class AppTheme {
   static const Color textGrey = Color(0xFFB0BEC5);
   static const Color textDark = Color(0xFF121212); // Added missing textDark
 
+  // Aliases for compatibility
+  static const Color primary = primaryPink;
+  static const Color accent = secondaryBlue;
+  static const Color accentPurple = Color(0xFF9C27B0);
+
   static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,

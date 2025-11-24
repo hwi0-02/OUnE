@@ -1,3 +1,5 @@
+import 'package:app_project/features/saju_analyzer/logic/daeun_calculator.dart';
+
 class UserModel {
   final String id;
   final DateTime createdAt;
@@ -43,5 +45,53 @@ class UserModel {
       'is_lunar': isLunar,
       'auth_provider': authProvider,
     };
+  }
+
+  /// Get complete birth DateTime (combines birthDate and birthTime)
+  DateTime get completeBirthDateTime {
+    if (birthTime != null) {
+      final parts = birthTime!.split(':');
+      if (parts.length == 2) {
+        final hour = int.tryParse(parts[0]) ?? 0;
+        final minute = int.tryParse(parts[1]) ?? 0;
+        return DateTime(
+          birthDate.year,
+          birthDate.month,
+          birthDate.day,
+          hour,
+          minute,
+        );
+      }
+    }
+    // Default to noon if no birthTime specified
+    return DateTime(
+      birthDate.year,
+      birthDate.month,
+      birthDate.day,
+      12,
+      0,
+    );
+  }
+
+  /// Get Gender enum for Saju analysis
+  Gender? get genderEnum {
+    if (gender == null) return null;
+    switch (gender!.toLowerCase()) {
+      case 'male':
+      case '남':
+      case '남성':
+        return Gender.male;
+      case 'female':
+      case '여':
+      case '여성':
+        return Gender.female;
+      default:
+        return null;
+    }
+  }
+
+  /// Check if user has complete Saju data
+  bool get hasCompleteSajuData {
+    return birthTime != null && gender != null;
   }
 }

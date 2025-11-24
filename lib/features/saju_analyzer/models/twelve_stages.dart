@@ -25,7 +25,7 @@ enum TwelveStage {
   
   /// 쇠 (衰) - Decline
   /// Beginning of weakening
-  쇠,
+  soe,
   
   /// 병 (病) - Illness
   /// Weakened state
@@ -67,7 +67,7 @@ extension TwelveStageExtension on TwelveStage {
         return '건록';
       case TwelveStage.jeWang:
         return '제왕';
-      case TwelveStage.쇠:
+      case TwelveStage.soe:
         return '쇠';
       case TwelveStage.byeong:
         return '병';
@@ -99,7 +99,7 @@ extension TwelveStageExtension on TwelveStage {
         return 6;
       case TwelveStage.tae:
         return 5;
-      case TwelveStage.쇠:
+      case TwelveStage.soe:
         return 4;
       case TwelveStage.mokYok:
         return 3;
@@ -127,7 +127,7 @@ extension TwelveStageExtension on TwelveStage {
         return '강한 위치, 자립';
       case TwelveStage.jeWang:
         return '최고의 힘과 영향력';
-      case TwelveStage.쇠:
+      case TwelveStage.soe:
         return '쇠퇴 시작';
       case TwelveStage.byeong:
         return '약화된 상태';
@@ -157,7 +157,7 @@ class TwelveStageCalculator {
       '축': TwelveStage.gwanDae,
       '인': TwelveStage.geonRok,
       '묘': TwelveStage.jeWang,
-      '진': TwelveStage.쇠,
+      '진': TwelveStage.soe,
       '사': TwelveStage.byeong,
       '오': TwelveStage.sa,
       '미': TwelveStage.myo,
@@ -171,7 +171,7 @@ class TwelveStageCalculator {
       '진': TwelveStage.gwanDae,
       '묘': TwelveStage.geonRok,
       '인': TwelveStage.jeWang,
-      '축': TwelveStage.쇠,
+      '축': TwelveStage.soe,
       '자': TwelveStage.byeong,
       '해': TwelveStage.sa,
       '술': TwelveStage.myo,
@@ -185,7 +185,7 @@ class TwelveStageCalculator {
       '진': TwelveStage.gwanDae,
       '사': TwelveStage.geonRok,
       '오': TwelveStage.jeWang,
-      '미': TwelveStage.쇠,
+      '미': TwelveStage.soe,
       '신': TwelveStage.byeong,
       '유': TwelveStage.sa,
       '술': TwelveStage.myo,
@@ -199,7 +199,7 @@ class TwelveStageCalculator {
       '미': TwelveStage.gwanDae,
       '오': TwelveStage.geonRok,
       '사': TwelveStage.jeWang,
-      '진': TwelveStage.쇠,
+      '진': TwelveStage.soe,
       '묘': TwelveStage.byeong,
       '인': TwelveStage.sa,
       '축': TwelveStage.myo,
@@ -213,7 +213,7 @@ class TwelveStageCalculator {
       '진': TwelveStage.gwanDae,
       '사': TwelveStage.geonRok,
       '오': TwelveStage.jeWang,
-      '미': TwelveStage.쇠,
+      '미': TwelveStage.soe,
       '신': TwelveStage.byeong,
       '유': TwelveStage.sa,
       '술': TwelveStage.myo,
@@ -227,7 +227,7 @@ class TwelveStageCalculator {
       '미': TwelveStage.gwanDae,
       '오': TwelveStage.geonRok,
       '사': TwelveStage.jeWang,
-      '진': TwelveStage.쇠,
+      '진': TwelveStage.soe,
       '묘': TwelveStage.byeong,
       '인': TwelveStage.sa,
       '축': TwelveStage.myo,
@@ -241,7 +241,7 @@ class TwelveStageCalculator {
       '미': TwelveStage.gwanDae,
       '신': TwelveStage.geonRok,
       '유': TwelveStage.jeWang,
-      '술': TwelveStage.쇠,
+      '술': TwelveStage.soe,
       '해': TwelveStage.byeong,
       '자': TwelveStage.sa,
       '축': TwelveStage.myo,
@@ -255,7 +255,7 @@ class TwelveStageCalculator {
       '술': TwelveStage.gwanDae,
       '유': TwelveStage.geonRok,
       '신': TwelveStage.jeWang,
-      '미': TwelveStage.쇠,
+      '미': TwelveStage.soe,
       '오': TwelveStage.byeong,
       '사': TwelveStage.sa,
       '진': TwelveStage.myo,
@@ -269,7 +269,7 @@ class TwelveStageCalculator {
       '술': TwelveStage.gwanDae,
       '해': TwelveStage.geonRok,
       '자': TwelveStage.jeWang,
-      '축': TwelveStage.쇠,
+      '축': TwelveStage.soe,
       '인': TwelveStage.byeong,
       '묘': TwelveStage.sa,
       '진': TwelveStage.myo,
@@ -283,7 +283,7 @@ class TwelveStageCalculator {
       '축': TwelveStage.gwanDae,
       '자': TwelveStage.geonRok,
       '해': TwelveStage.jeWang,
-      '술': TwelveStage.쇠,
+      '술': TwelveStage.soe,
       '유': TwelveStage.byeong,
       '신': TwelveStage.sa,
       '미': TwelveStage.myo,

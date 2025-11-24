@@ -19,6 +19,7 @@ import 'package:app_project/features/tarot/tarot_screen.dart';
 import 'package:app_project/features/theme_fortune/theme_fortune_screen.dart';
 import 'package:app_project/features/wallet/earn_candy_screen.dart';
 import 'package:app_project/features/yearly_fortune/yearly_fortune_screen.dart';
+import 'package:app_project/features/saju/saju_analysis_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final router = GoRouter(
@@ -113,6 +114,10 @@ final router = GoRouter(
     GoRoute(
       path: '/saju-settings',
       builder: (context, state) => const SajuSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/saju-analysis',
+      builder: (context, state) => const SajuAnalysisScreen(),
     ),
   ],
 );

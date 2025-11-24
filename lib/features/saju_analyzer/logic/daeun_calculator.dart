@@ -1,3 +1,5 @@
+import 'package:app_project/core/data/monthly_solar_terms_data.dart';
+
 /// Gender enum for Saju analysis
 enum Gender {
   male,
@@ -161,10 +163,114 @@ class DaeunCalculator {
   /// 
   /// Forward: days to NEXT term
   /// Backward: days to PREVIOUS term
+  /// 
+  /// Uses precise solar term data from MonthlySolarTermsData when available
   static int _getDaysToNearestTerm(DateTime birthDate, DaeunDirection direction) {
-    // Simplified: use approximate solar term dates
-    // In production, should use precise solar term data
+    // Try to get precise solar term data first
+    try {
+      final sajuMonthIndex = MonthlySolarTermsData.getSajuMonthIndex(birthDate);
+      
+      if (sajuMonthIndex != null) {
+        if (direction == DaeunDirection.forward) {
+          // Get NEXT solar term
+          final nextMonthIndex = (sajuMonthIndex + 1) % 12;
+          final nextTerm = _getNextSolarTermDate(birthDate, nextMonthIndex);
+          if (nextTerm != null) {
+            final diff = nextTerm.difference(birthDate).inDays;
+            return diff > 0 ? diff : 1;
+          }
+        } else {
+          // Get PREVIOUS solar term (current month's term)
+          final currentTerm = _getCurrentSolarTermDate(birthDate, sajuMonthIndex);
+          if (currentTerm != null) {
+            final diff = birthDate.difference(currentTerm).inDays;
+            return diff > 0 ? diff : 1;
+          }
+        }
+      }
+    } catch (e) {
+      // Fall through to approximate calculation if precise data not available
+    }
     
+    // Fallback: Approximate calculation for years without precise data
+    return _getApproximateDaysToTerm(birthDate, direction);
+  }
+  
+  /// Get the date of the next solar term
+  static DateTime? _getNextSolarTermDate(DateTime birthDate, int monthIndex) {
+    try {
+      final year = birthDate.year;
+      final solarTermsForYear = MonthlySolarTermsData.getSolarTermsForYear(year);
+      
+      if (solarTermsForYear == null) return null;
+      
+      // Find the term for the next month
+      for (var term in solarTermsForYear) {
+        if (term['index'] == monthIndex && term['date'].isAfter(birthDate)) {
+          return term['date'];
+        }
+      }
+      
+      // If not found in current year, try next year's first term
+      final nextYearTerms = MonthlySolarTermsData.getSolarTermsForYear(year + 1);
+      if (nextYearTerms != null && nextYearTerms.isNotEmpty) {
+        for (var term in nextYearTerms) {
+          if (term['index'] == monthIndex) {
+            return term['date'];
+          }
+        }
+      }
+    } catch (e) {
+      return null;
+    }
+    
+    return null;
+  }
+  
+  /// Get the date of the current solar term (beginning of current Saju month)
+  static DateTime? _getCurrentSolarTermDate(DateTime birthDate, int monthIndex) {
+    try {
+      final year = birthDate.year;
+      final solarTermsForYear = MonthlySolarTermsData.getSolarTermsForYear(year);
+      
+      if (solarTermsForYear == null) return null;
+      
+      // Find the term for the current month that is before or equal to birthDate
+      DateTime? currentTerm;
+      for (var term in solarTermsForYear) {
+        if (term['index'] == monthIndex && term['date'].isBefore(birthDate)) {
+          currentTerm = term['date'];
+        } else if (term['index'] == monthIndex && 
+                   term['date'].year == birthDate.year &&
+                   term['date'].month == birthDate.month &&
+                   term['date'].day == birthDate.day) {
+          // Same day, check time
+          if (term['date'].isBefore(birthDate) || term['date'].isAtSameMomentAs(birthDate)) {
+            currentTerm = term['date'];
+          }
+        }
+      }
+      
+      // If not found, try previous year's term
+      if (currentTerm == null) {
+        final prevYearTerms = MonthlySolarTermsData.getSolarTermsForYear(year - 1);
+        if (prevYearTerms != null) {
+          for (var term in prevYearTerms) {
+            if (term['index'] == monthIndex && term['date'].isBefore(birthDate)) {
+              currentTerm = term['date'];
+            }
+          }
+        }
+      }
+      
+      return currentTerm;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  /// Approximate days to term calculation (fallback for years without precise data)
+  static int _getApproximateDaysToTerm(DateTime birthDate, DaeunDirection direction) {
     // Approximate monthly solar terms (day of month)
     const solarTermDays = [
       6,  // Jan - Sohan
@@ -215,7 +321,7 @@ class DaeunCalculator {
       }
     }
     
-    return daysToTerm;
+    return daysToTerm > 0 ? daysToTerm : 1;
   }
   
   /// Get 60 GanJi index from GanJi string

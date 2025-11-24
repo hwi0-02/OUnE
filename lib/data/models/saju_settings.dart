@@ -20,6 +20,9 @@ class SajuSettings {
   /// When true, applies additional EoT for maximum precision
   final bool useEquationOfTime;
 
+  /// Whether to apply solar time correction (longitude-based)
+  final bool useSolarTimeCorrection;
+
   const SajuSettings({
     this.useYaJaSi = false,
     this.localLongitude,

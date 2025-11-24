@@ -49,7 +49,26 @@ class SajuService {
   }) {
     // 1. Get basic four pillars
     final saju = SajuEngine.getSaju(birthDate);
-    final dayGanJi = saju['day']!;
+    print('Saju Analysis Debug: $saju'); // Debug log
+
+    final dayGanJi = saju['day'] ?? '  '; // Fallback to 2 spaces
+    if (dayGanJi.length < 2) {
+      print('Error: Invalid dayGanJi: $dayGanJi');
+      return SajuAnalysis(
+        pillars: saju,
+        dayGan: '?',
+        dayJi: '?',
+        gender: gender,
+        tenGods: {},
+        twelveStages: {},
+        interactions: [],
+        daeunPeriods: [],
+        elementScores: {},
+        isStrong: false,
+        luckyElement: '?',
+      );
+    }
+
     final dayGan = dayGanJi.substring(0, 1);
     final dayJi = dayGanJi.substring(1, 2);
     
@@ -57,7 +76,9 @@ class SajuService {
     final tenGods = <String, TenGod>{};
     for (var entry in saju.entries) {
       if (entry.key != 'day') {
-        final targetGan = entry.value.substring(0, 1);
+        final val = entry.value;
+        if (val.length < 2) continue; // Skip invalid
+        final targetGan = val.substring(0, 1);
         tenGods[entry.key] = TenGodCalculator.getTenGod(dayGan, targetGan);
       }
     }
@@ -65,8 +86,10 @@ class SajuService {
     // 3. Calculate Twelve Stages
     final twelveStages = <String, TwelveStage?>{};
     for (var entry in saju.entries) {
-      final gan = entry.value.substring(0, 1);
-      final ji = entry.value.substring(1, 2);
+      final val = entry.value;
+      if (val.length < 2) continue;
+      final gan = val.substring(0, 1);
+      final ji = val.substring(1, 2);
       twelveStages[entry.key] = TwelveStageCalculator.getTwelveStage(gan, ji);
     }
     
@@ -162,6 +185,7 @@ class SajuService {
     // Check for clashes with birth chart
     int clashPenalty = 0;
     for (var pillarGanJi in analysis.pillars.values) {
+      if (pillarGanJi.length < 2) continue;
       final pillarJi = pillarGanJi.substring(1, 2);
       if (InteractionCalculator.checkJijiChung(todayJi, pillarJi) != null) {
         clashPenalty += 10;
@@ -197,6 +221,8 @@ class SajuService {
     for (var entry in saju.entries) {
       final position = entry.key;
       final ganJi = entry.value;
+      if (ganJi.length < 2) continue;
+      
       final gan = ganJi.substring(0, 1);
       final ji = ganJi.substring(1, 2);
       

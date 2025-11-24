@@ -142,4 +142,24 @@ class MonthlySolarTermsData {
   static bool hasDataFor(int year) {
     return data.containsKey(year);
   }
+
+  /// Get all solar terms for a specific year
+  /// Used by DaeunCalculator for precise term-based calculations
+  /// Returns null if data is not available for the year
+  static List<Map<String, dynamic>>? getSolarTermsForYear(int year) {
+    final yearData = data[year];
+    if (yearData == null) return null;
+
+    final List<Map<String, dynamic>> terms = [];
+    for (int monthIndex = 1; monthIndex <= 12; monthIndex++) {
+      final termDate = getSolarTermDate(year, monthIndex);
+      if (termDate != null) {
+        terms.add({
+          'index': monthIndex,
+          'date': termDate,
+        });
+      }
+    }
+    return terms;
+  }
 }

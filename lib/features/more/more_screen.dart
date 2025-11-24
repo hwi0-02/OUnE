@@ -32,9 +32,7 @@ class MoreScreen extends StatelessWidget {
             title: '정통 사주',
             subtitle: '평생 총운 분석',
             color: Colors.deepPurpleAccent,
-            onTap: () {
-              // TODO: Navigate to Saju
-            },
+            onTap: () => context.push('/saju-analysis'),
           ),
           _buildMenuCard(
             context,

@@ -1,526 +1,268 @@
-🔮 사주 운세 엔진 고도화 기술 명세서 (Roadmap)
-1. 개요 (Overview)
-목표: 천문학적 데이터를 단순 나열하는 단계를 넘어, 글자 간의 관계(십성, 합충, 신살)를 분석하여 사용자의 길흉화복을 판단하는 알고리즘 구현.
-
-대상 파일: lib/core/utils/saju_engine.dart (확장), lib/data/models/saju_analysis.dart (신규 생성 필요)
-
-2. 단계별 구현 상세 (Implementation Steps)
-[Step 1] 기초 관계성 정립: 십성(Ten Gods) 및 12운성
-가장 기초적인 해석의 언어인 '십성(육친)'과 에너지의 세기를 나타내는 '12운성'을 구현합니다.
-
-기능 정의:
-
-십성(Ten Gods): 일간(나)과 다른 글자와의 생극제화 관계 (비견, 겁재, 식신, 상관, 편재, 정재, 편관, 정관, 편인, 정인).
-
-12운성(Twelve Stages): 천간이 지지에서 갖는 힘의 세기 (장생, 목욕, 관대 ... 절, 태, 양).
-
-구현 로직 예시 (Dart):
-
-Dart
-
-enum TenGod {
-  biGyeon, // 비견 (나와 같은 오행, 음양 같음)
-  geopJae, // 겁재 (나와 같은 오행, 음양 다름)
-  sikSin,  // 식신 (내가 생함, 음양 같음)
-  sangGwan,// 상관 (내가 생함, 음양 다름)
-  // ... 나머지 6개
-}
-
-// SajuEngine 클래스 확장
-static TenGod getTenGod(String dayGan, String target) {
-  // 1. dayGan과 target의 오행 비교
-  // 2. dayGan과 target의 음양 비교
-  // 3. 매트릭스에 따라 TenGod 반환
-}
-[Step 2] 동적 상호작용: 합(合)·충(沖)·형(刑) 알고리즘
-사주 원국 내 글자끼리의 화학 작용을 계산합니다. 이는 운세의 좋고 나쁨을 결정하는 핵심 변수입니다.
-
-구현 목록:
-
-천간합(Heavenly Stems Combination): 갑기합(토), 을경합(금) 등 5쌍.
-
-천간충(Heavenly Stems Clash): 갑경충, 을신충 등.
-
-지지육합(Six Combinations): 자축합, 인해합 등.
-
-지지삼합(Three Harmony): 신자진(수국), 인오술(화국) 등 → 오행의 변화를 계산해야 함.
-
-지지충/형: 자오충, 인사신 삼형살 등.
-
-데이터 구조 설계:
-
-단순 Boolean 체크가 아니라, List<InteractionResult> 형태로 반환하여 "어떤 글자와 어떤 글자가 충돌했는지" 정보를 UI에 전달해야 합니다.
-
-[Step 3] 시간의 흐름: 대운(大運) 및 세운(歲運) 계산
-현재 엔진은 getSaju(DateTime date)를 통해 정적인 4기둥만 뽑습니다. 10년마다 변하는 운(대운)을 계산해야 인생 그래프를 그릴 수 있습니다.
-
-알고리즘 순서:
-
-대운수(Age) 계산: 태어난 날짜와 가장 가까운 절기(입춘, 입하 등)까지의 날짜 수 ÷ 3.
-
-순행/역행 판단:
-
-양남음녀(양의 해 남자, 음의 해 여자) → 순행 (월주 다음 글자부터 시작)
-
-음남양녀(음의 해 남자, 양의 해 여자) → 역행 (월주 이전 글자부터 거꾸로)
-
-대운 리스트 생성: 10년 단위의 간지(Gan-Ji) 리스트 생성.
-
-[Step 4] 종합 판단: 용신(用神) 및 점수화 (Scoring)
-사용자에게 "85점"과 같은 직관적인 결과를 주기 위한 내부 평가 로직입니다. 가장 난이도가 높습니다.
-
-평가 로직 (억부법 기준 Simplified):
-
-세력 점수화: 사주 8글자의 오행별 점수 계산 (예: 월지는 30점, 일지는 15점 등 가중치 부여).
-
-신강/신약 판단: 나를 도와주는 세력(인성+비겁) vs 힘을 빼는 세력(식상+재성+관성) 비교.
-
-용신(Lucky Element) 선정:
-
-신약하면 → 인성/비겁이 용신 (Lucky)
-
-신강하면 → 식상/재성/관성이 용신 (Lucky)
-
-오늘의 운세 매칭:
-
-오늘의 오행 == 용신 오행 → "매우 좋음 (90점+)"
-
-오늘의 오행 == 기신(Bad) 오행 → "주의 필요 (50점-)"
-
-3. 추천 파일 구조 (Refactoring Plan)
-기존 코드를 유지하면서 기능을 확장하기 위한 폴더 구조 제안입니다.
-
-Plaintext
-
-lib/
-├── core/
-│   └── utils/
-│       ├── saju_engine.dart      // [기존] 만세력 산출 (천문 계산)
-│       └── saju_converter.dart   // [신규] 음양오행 변환 유틸 (오행 색상, 숫자 등)
-├── features/
-│   └── saju_analyzer/            // [신규] 해석 엔진 패키지
-│       ├── models/
-│       │   ├── ten_gods.dart     // 십성 Enum
-│       │   ├── twelve_stages.dart// 12운성 Enum
-🔮 사주 운세 엔진 고도화 기술 명세서 (Roadmap)
-1. 개요 (Overview)
-목표: 천문학적 데이터를 단순 나열하는 단계를 넘어, 글자 간의 관계(십성, 합충, 신살)를 분석하여 사용자의 길흉화복을 판단하는 알고리즘 구현.
-
-대상 파일: lib/core/utils/saju_engine.dart (확장), lib/data/models/saju_analysis.dart (신규 생성 필요)
-
-2. 단계별 구현 상세 (Implementation Steps)
-[Step 1] 기초 관계성 정립: 십성(Ten Gods) 및 12운성
-가장 기초적인 해석의 언어인 '십성(육친)'과 에너지의 세기를 나타내는 '12운성'을 구현합니다.
-
-기능 정의:
-
-십성(Ten Gods): 일간(나)과 다른 글자와의 생극제화 관계 (비견, 겁재, 식신, 상관, 편재, 정재, 편관, 정관, 편인, 정인).
-
-12운성(Twelve Stages): 천간이 지지에서 갖는 힘의 세기 (장생, 목욕, 관대 ... 절, 태, 양).
-
-구현 로직 예시 (Dart):
-
-Dart
-
-enum TenGod {
-  biGyeon, // 비견 (나와 같은 오행, 음양 같음)
-  geopJae, // 겁재 (나와 같은 오행, 음양 다름)
-  sikSin,  // 식신 (내가 생함, 음양 같음)
-  sangGwan,// 상관 (내가 생함, 음양 다름)
-  // ... 나머지 6개
-}
-
-// SajuEngine 클래스 확장
-static TenGod getTenGod(String dayGan, String target) {
-  // 1. dayGan과 target의 오행 비교
-  // 2. dayGan과 target의 음양 비교
-  // 3. 매트릭스에 따라 TenGod 반환
-}
-[Step 2] 동적 상호작용: 합(合)·충(沖)·형(刑) 알고리즘
-사주 원국 내 글자끼리의 화학 작용을 계산합니다. 이는 운세의 좋고 나쁨을 결정하는 핵심 변수입니다.
-
-구현 목록:
-
-천간합(Heavenly Stems Combination): 갑기합(토), 을경합(금) 등 5쌍.
-
-천간충(Heavenly Stems Clash): 갑경충, 을신충 등.
-
-지지육합(Six Combinations): 자축합, 인해합 등.
-
-지지삼합(Three Harmony): 신자진(수국), 인오술(화국) 등 → 오행의 변화를 계산해야 함.
-
-지지충/형: 자오충, 인사신 삼형살 등.
-
-데이터 구조 설계:
-
-단순 Boolean 체크가 아니라, List<InteractionResult> 형태로 반환하여 "어떤 글자와 어떤 글자가 충돌했는지" 정보를 UI에 전달해야 합니다.
-
-[Step 3] 시간의 흐름: 대운(大運) 및 세운(歲運) 계산
-현재 엔진은 getSaju(DateTime date)를 통해 정적인 4기둥만 뽑습니다. 10년마다 변하는 운(대운)을 계산해야 인생 그래프를 그릴 수 있습니다.
-
-알고리즘 순서:
-
-대운수(Age) 계산: 태어난 날짜와 가장 가까운 절기(입춘, 입하 등)까지의 날짜 수 ÷ 3.
-
-순행/역행 판단:
-
-양남음녀(양의 해 남자, 음의 해 여자) → 순행 (월주 다음 글자부터 시작)
-
-음남양녀(음의 해 남자, 양의 해 여자) → 역행 (월주 이전 글자부터 거꾸로)
-
-대운 리스트 생성: 10년 단위의 간지(Gan-Ji) 리스트 생성.
-
-[Step 4] 종합 판단: 용신(用神) 및 점수화 (Scoring)
-사용자에게 "85점"과 같은 직관적인 결과를 주기 위한 내부 평가 로직입니다. 가장 난이도가 높습니다.
-
-평가 로직 (억부법 기준 Simplified):
-
-세력 점수화: 사주 8글자의 오행별 점수 계산 (예: 월지는 30점, 일지는 15점 등 가중치 부여).
-
-신강/신약 판단: 나를 도와주는 세력(인성+비겁) vs 힘을 빼는 세력(식상+재성+관성) 비교.
-
-용신(Lucky Element) 선정:
-
-신약하면 → 인성/비겁이 용신 (Lucky)
-
-신강하면 → 식상/재성/관성이 용신 (Lucky)
-
-오늘의 운세 매칭:
-
-오늘의 오행 == 용신 오행 → "매우 좋음 (90점+)"
-
-오늘의 오행 == 기신(Bad) 오행 → "주의 필요 (50점-)"
-
-3. 추천 파일 구조 (Refactoring Plan)
-기존 코드를 유지하면서 기능을 확장하기 위한 폴더 구조 제안입니다.
-
-Plaintext
-
-lib/
-├── core/
-│   └── utils/
-│       ├── saju_engine.dart      // [기존] 만세력 산출 (천문 계산)
-│       └── saju_converter.dart   // [신규] 음양오행 변환 유틸 (오행 색상, 숫자 등)
-├── features/
-│   └── saju_analyzer/            // [신규] 해석 엔진 패키지
-│       ├── models/
-│       │   ├── ten_gods.dart     // 십성 Enum
-│       │   ├── twelve_stages.dart// 12운성 Enum
-│       │   └── interactions.dart // 합충형파해 결과 모델
-12운성(Twelve Stages): 천간이 지지에서 갖는 힘의 세기 (장생, 목욕, 관대 ... 절, 태, 양).
-
-구현 로직 예시 (Dart):
-
-Dart
-
-enum TenGod {
-  biGyeon, // 비견 (나와 같은 오행, 음양 같음)
-  geopJae, // 겁재 (나와 같은 오행, 음양 다름)
-  sikSin,  // 식신 (내가 생함, 음양 같음)
-  sangGwan,// 상관 (내가 생함, 음양 다름)
-  // ... 나머지 6개
-}
-
-// SajuEngine 클래스 확장
-static TenGod getTenGod(String dayGan, String target) {
-  // 1. dayGan과 target의 오행 비교
-  // 2. dayGan과 target의 음양 비교
-  // 3. 매트릭스에 따라 TenGod 반환
-}
-[Step 2] 동적 상호작용: 합(合)·충(沖)·형(刑) 알고리즘
-사주 원국 내 글자끼리의 화학 작용을 계산합니다. 이는 운세의 좋고 나쁨을 결정하는 핵심 변수입니다.
-
-구현 목록:
-
-천간합(Heavenly Stems Combination): 갑기합(토), 을경합(금) 등 5쌍.
-
-천간충(Heavenly Stems Clash): 갑경충, 을신충 등.
-
-지지육합(Six Combinations): 자축합, 인해합 등.
-
-지지삼합(Three Harmony): 신자진(수국), 인오술(화국) 등 → 오행의 변화를 계산해야 함.
-
-지지충/형: 자오충, 인사신 삼형살 등.
-
-데이터 구조 설계:
-
-단순 Boolean 체크가 아니라, List<InteractionResult> 형태로 반환하여 "어떤 글자와 어떤 글자가 충돌했는지" 정보를 UI에 전달해야 합니다.
-
-[Step 3] 시간의 흐름: 대운(大運) 및 세운(歲運) 계산
-현재 엔진은 getSaju(DateTime date)를 통해 정적인 4기둥만 뽑습니다. 10년마다 변하는 운(대운)을 계산해야 인생 그래프를 그릴 수 있습니다.
-
-알고리즘 순서:
-
-대운수(Age) 계산: 태어난 날짜와 가장 가까운 절기(입춘, 입하 등)까지의 날짜 수 ÷ 3.
-
-순행/역행 판단:
-
-양남음녀(양의 해 남자, 음의 해 여자) → 순행 (월주 다음 글자부터 시작)
-
-음남양녀(음의 해 남자, 양의 해 여자) → 역행 (월주 이전 글자부터 거꾸로)
-
-대운 리스트 생성: 10년 단위의 간지(Gan-Ji) 리스트 생성.
-
-[Step 4] 종합 판단: 용신(用神) 및 점수화 (Scoring)
-사용자에게 "85점"과 같은 직관적인 결과를 주기 위한 내부 평가 로직입니다. 가장 난이도가 높습니다.
-
-평가 로직 (억부법 기준 Simplified):
-
-세력 점수화: 사주 8글자의 오행별 점수 계산 (예: 월지는 30점, 일지는 15점 등 가중치 부여).
-
-신강/신약 판단: 나를 도와주는 세력(인성+비겁) vs 힘을 빼는 세력(식상+재성+관성) 비교.
-
-용신(Lucky Element) 선정:
-
-신약하면 → 인성/비겁이 용신 (Lucky)
-
-신강하면 → 식상/재성/관성이 용신 (Lucky)
-
-오늘의 운세 매칭:
-
-오늘의 오행 == 용신 오행 → "매우 좋음 (90점+)"
-
-오늘의 오행 == 기신(Bad) 오행 → "주의 필요 (50점-)"
-
-3. 추천 파일 구조 (Refactoring Plan)
-기존 코드를 유지하면서 기능을 확장하기 위한 폴더 구조 제안입니다.
-
-Plaintext
-
-lib/
-├── core/
-│   └── utils/
-│       ├── saju_engine.dart      // [기존] 만세력 산출 (천문 계산)
-│       └── saju_converter.dart   // [신규] 음양오행 변환 유틸 (오행 색상, 숫자 등)
-├── features/
-│   └── saju_analyzer/            // [신규] 해석 엔진 패키지
-│       ├── models/
-│       │   ├── ten_gods.dart     // 십성 Enum
-│       │   ├── twelve_stages.dart// 12운성 Enum
-🔮 사주 운세 엔진 고도화 기술 명세서 (Roadmap)
-1. 개요 (Overview)
-목표: 천문학적 데이터를 단순 나열하는 단계를 넘어, 글자 간의 관계(십성, 합충, 신살)를 분석하여 사용자의 길흉화복을 판단하는 알고리즘 구현.
-
-대상 파일: lib/core/utils/saju_engine.dart (확장), lib/data/models/saju_analysis.dart (신규 생성 필요)
-
-2. 단계별 구현 상세 (Implementation Steps)
-[Step 1] 기초 관계성 정립: 십성(Ten Gods) 및 12운성
-가장 기초적인 해석의 언어인 '십성(육친)'과 에너지의 세기를 나타내는 '12운성'을 구현합니다.
-
-기능 정의:
-
-십성(Ten Gods): 일간(나)과 다른 글자와의 생극제화 관계 (비견, 겁재, 식신, 상관, 편재, 정재, 편관, 정관, 편인, 정인).
-
-12운성(Twelve Stages): 천간이 지지에서 갖는 힘의 세기 (장생, 목욕, 관대 ... 절, 태, 양).
-
-구현 로직 예시 (Dart):
-
-Dart
-
-enum TenGod {
-  biGyeon, // 비견 (나와 같은 오행, 음양 같음)
-  geopJae, // 겁재 (나와 같은 오행, 음양 다름)
-  sikSin,  // 식신 (내가 생함, 음양 같음)
-  sangGwan,// 상관 (내가 생함, 음양 다름)
-  // ... 나머지 6개
-}
-
-// SajuEngine 클래스 확장
-static TenGod getTenGod(String dayGan, String target) {
-  // 1. dayGan과 target의 오행 비교
-  // 2. dayGan과 target의 음양 비교
-  // 3. 매트릭스에 따라 TenGod 반환
-}
-[Step 2] 동적 상호작용: 합(合)·충(沖)·형(刑) 알고리즘
-사주 원국 내 글자끼리의 화학 작용을 계산합니다. 이는 운세의 좋고 나쁨을 결정하는 핵심 변수입니다.
-
-구현 목록:
-
-천간합(Heavenly Stems Combination): 갑기합(토), 을경합(금) 등 5쌍.
-
-천간충(Heavenly Stems Clash): 갑경충, 을신충 등.
-
-지지육합(Six Combinations): 자축합, 인해합 등.
-
-지지삼합(Three Harmony): 신자진(수국), 인오술(화국) 등 → 오행의 변화를 계산해야 함.
-
-지지충/형: 자오충, 인사신 삼형살 등.
-
-데이터 구조 설계:
-
-단순 Boolean 체크가 아니라, List<InteractionResult> 형태로 반환하여 "어떤 글자와 어떤 글자가 충돌했는지" 정보를 UI에 전달해야 합니다.
-
-[Step 3] 시간의 흐름: 대운(大運) 및 세운(歲運) 계산
-현재 엔진은 getSaju(DateTime date)를 통해 정적인 4기둥만 뽑습니다. 10년마다 변하는 운(대운)을 계산해야 인생 그래프를 그릴 수 있습니다.
-
-알고리즘 순서:
-
-대운수(Age) 계산: 태어난 날짜와 가장 가까운 절기(입춘, 입하 등)까지의 날짜 수 ÷ 3.
-
-순행/역행 판단:
-
-양남음녀(양의 해 남자, 음의 해 여자) → 순행 (월주 다음 글자부터 시작)
-
-음남양녀(음의 해 남자, 양의 해 여자) → 역행 (월주 이전 글자부터 거꾸로)
-
-대운 리스트 생성: 10년 단위의 간지(Gan-Ji) 리스트 생성.
-
-[Step 4] 종합 판단: 용신(用神) 및 점수화 (Scoring)
-사용자에게 "85점"과 같은 직관적인 결과를 주기 위한 내부 평가 로직입니다. 가장 난이도가 높습니다.
-
-평가 로직 (억부법 기준 Simplified):
-
-세력 점수화: 사주 8글자의 오행별 점수 계산 (예: 월지는 30점, 일지는 15점 등 가중치 부여).
-
-신강/신약 판단: 나를 도와주는 세력(인성+비겁) vs 힘을 빼는 세력(식상+재성+관성) 비교.
-
-용신(Lucky Element) 선정:
-
-신약하면 → 인성/비겁이 용신 (Lucky)
-
-신강하면 → 식상/재성/관성이 용신 (Lucky)
-
-오늘의 운세 매칭:
-
-오늘의 오행 == 용신 오행 → "매우 좋음 (90점+)"
-
-오늘의 오행 == 기신(Bad) 오행 → "주의 필요 (50점-)"
-
-3. 추천 파일 구조 (Refactoring Plan)
-기존 코드를 유지하면서 기능을 확장하기 위한 폴더 구조 제안입니다.
-
-Plaintext
-
-lib/
-├── core/
-│   └── utils/
-│       ├── saju_engine.dart      // [기존] 만세력 산출 (천문 계산)
-│       └── saju_converter.dart   // [신규] 음양오행 변환 유틸 (오행 색상, 숫자 등)
-├── features/
-│   └── saju_analyzer/            // [신규] 해석 엔진 패키지
-│       ├── models/
-│       │   ├── ten_gods.dart     // 십성 Enum
-│       │   ├── twelve_stages.dart// 12운성 Enum
-│       │   └── interactions.dart // 합충형파해 결과 모델
-│       ├── logic/
-│       │   ├── interaction_calculator.dart // 합/충 계산 로직
-│       │   ├── daeun_calculator.dart       // 대운 계산 로직
-│       │   └── yongsin_selector.dart       // 용신/희신 판단 로직
-│       └── saju_service.dart     // UI에서 호출하는 Facade 서비스
-4. 개발 체크리스트 (To-Do)
-Phase 1: 데이터 모델링
-
-[x] TenGod (십성) Enum 정의 및 산출 로직 구현.
-
-[x] TwelveStage (12운성) 표 매핑 로직 구현.
-
-Phase 2: 관계성 구현
-
-[x] 천간 합/충 로직 구현 (List 반환).
-
-[x] 지지 삼합/방합/육합/충/형 로직 구현.
-
-Phase 3: 대운(Life Cycle) 구현
-}
-[Step 2] 동적 상호작용: 합(合)·충(沖)·형(刑) 알고리즘
-사주 원국 내 글자끼리의 화학 작용을 계산합니다. 이는 운세의 좋고 나쁨을 결정하는 핵심 변수입니다.
-
-구현 목록:
-
-천간합(Heavenly Stems Combination): 갑기합(토), 을경합(금) 등 5쌍.
-
-천간충(Heavenly Stems Clash): 갑경충, 을신충 등.
-
-지지육합(Six Combinations): 자축합, 인해합 등.
-
-지지삼합(Three Harmony): 신자진(수국), 인오술(화국) 등 → 오행의 변화를 계산해야 함.
-
-지지충/형: 자오충, 인사신 삼형살 등.
-
-데이터 구조 설계:
-
-단순 Boolean 체크가 아니라, List<InteractionResult> 형태로 반환하여 "어떤 글자와 어떤 글자가 충돌했는지" 정보를 UI에 전달해야 합니다.
-
-[Step 3] 시간의 흐름: 대운(大運) 및 세운(歲運) 계산
-현재 엔진은 getSaju(DateTime date)를 통해 정적인 4기둥만 뽑습니다. 10년마다 변하는 운(대운)을 계산해야 인생 그래프를 그릴 수 있습니다.
-
-알고리즘 순서:
-
-대운수(Age) 계산: 태어난 날짜와 가장 가까운 절기(입춘, 입하 등)까지의 날짜 수 ÷ 3.
-
-순행/역행 판단:
-
-양남음녀(양의 해 남자, 음의 해 여자) → 순행 (월주 다음 글자부터 시작)
-
-음남양녀(음의 해 남자, 양의 해 여자) → 역행 (월주 이전 글자부터 거꾸로)
-
-대운 리스트 생성: 10년 단위의 간지(Gan-Ji) 리스트 생성.
-
-[Step 4] 종합 판단: 용신(用神) 및 점수화 (Scoring)
-사용자에게 "85점"과 같은 직관적인 결과를 주기 위한 내부 평가 로직입니다. 가장 난이도가 높습니다.
-
-평가 로직 (억부법 기준 Simplified):
-
-세력 점수화: 사주 8글자의 오행별 점수 계산 (예: 월지는 30점, 일지는 15점 등 가중치 부여).
-
-신강/신약 판단: 나를 도와주는 세력(인성+비겁) vs 힘을 빼는 세력(식상+재성+관성) 비교.
-
-용신(Lucky Element) 선정:
-
-신약하면 → 인성/비겁이 용신 (Lucky)
-
-신강하면 → 식상/재성/관성이 용신 (Lucky)
-
-오늘의 운세 매칭:
-
-오늘의 오행 == 용신 오행 → "매우 좋음 (90점+)"
-
-오늘의 오행 == 기신(Bad) 오행 → "주의 필요 (50점-)"
-
-3. 추천 파일 구조 (Refactoring Plan)
-기존 코드를 유지하면서 기능을 확장하기 위한 폴더 구조 제안입니다.
-
-Plaintext
-
-lib/
-├── core/
-│   └── utils/
-│       ├── saju_engine.dart      // [기존] 만세력 산출 (천문 계산)
-│       └── saju_converter.dart   // [신규] 음양오행 변환 유틸 (오행 색상, 숫자 등)
-├── features/
-│   └── saju_analyzer/            // [신규] 해석 엔진 패키지
-│       ├── models/
-│       │   ├── ten_gods.dart     // 십성 Enum
-│       │   ├── twelve_stages.dart// 12운성 Enum
-│       │   └── interactions.dart // 합충형파해 결과 모델
-│       ├── logic/
-│       │   ├── interaction_calculator.dart // 합/충 계산 로직
-│       │   ├── daeun_calculator.dart       // 대운 계산 로직
-│       │   └── yongsin_selector.dart       // 용신/희신 판단 로직
-│       └── saju_service.dart     // UI에서 호출하는 Facade 서비스
-4. 개발 체크리스트 (To-Do)
-Phase 1: 데이터 모델링
-
-[x] TenGod (십성) Enum 정의 및 산출 로직 구현.
-
-[x] TwelveStage (12운성) 표 매핑 로직 구현.
-
-Phase 2: 관계성 구현
-
-[x] 천간 합/충 로직 구현 (List 반환).
-
-[x] 지지 삼합/방합/육합/충/형 로직 구현.
-
-Phase 3: 대운(Life Cycle) 구현
-
-[x] 성별(남/녀) 정보 입력을 받는 로직 추가 (필수).
-
-[x] 대운수(숫자) 및 대운 간지 리스트 산출 함수 작성.
-
-Phase 4: 운세 알고리즘 고도화
-
-[x] 현재 FortuneCalendarService의 랜덤 기반 로직(dayHash)을 제거.
-
-[x] [용신 찾기] -> [오늘 날짜와 비교] -> [점수 산출] 로직으로 전면 교체.
-
-## ✅ 모든 Phase 완료!
+PS C:\app_project> flutter analyze
+Analyzing app_project...                                                
+
+warning - The include file 'package:flutter_lints/flutter.yaml' in 'C:\app_project\analysis_options.yaml'
+       can't be found when analyzing 'C:\app_project' - analysis_options.yaml:10:10 -
+       include_file_not_found
+   info - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was
+          deprecated after v3.18.0-0.1.pre - lib\core\theme\app_theme.dart:34:9 - deprecated_member_use    
+warning - The value of the local variable 'dayOfYear' isn't used -
+       lib\core\utils\equation_of_time.dart:23:11 - unused_local_variable
+warning - Unused import: 'package:app_project/core/utils/equation_of_time.dart' -
+       lib\core\utils\saju_engine.dart:3:8 - unused_import
+   info - 'ipchunData' is deprecated and shouldn't be used. Use ExtendedIpchunData instead -
+          lib\core\utils\saju_engine.dart:256:9 - deprecated_member_use_from_same_package
+   info - 'ipchunData' is deprecated and shouldn't be used. Use ExtendedIpchunData instead -
+          lib\core\utils\saju_engine.dart:257:22 - deprecated_member_use_from_same_package
+warning - The value of the local variable 'applicableYear' isn't used -
+       lib\core\utils\time_correction.dart:47:10 - unused_local_variable
+warning - The value of the local variable 'todayDayJi' isn't used -
+       lib\data\services\fortune_service.dart:93:18 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\auth\onboarding_screen.dart:77:45 - deprecated_member_use
+   info - 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor 
+          instead. This feature was deprecated after v3.27.0-0.1.pre -
+          lib\features\auth\profile_setup_screen.dart:47:13 - deprecated_member_use
+   info - 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor 
+          instead. This feature was deprecated after v3.27.0-0.1.pre -
+          lib\features\auth\profile_setup_screen.dart:73:13 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\calendar\calendar_screen.dart:82:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\calendar\calendar_screen.dart:120:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\calendar\calendar_screen.dart:176:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\calendar\calendar_screen.dart:177:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -
+          lib\features\calendar\calendar_screen.dart:181:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\calendar\calendar_screen.dart:250:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\calendar\calendar_screen.dart:285:48 - deprecated_member_use
+warning - The value of the field '_random' isn't used -
+       lib\features\calendar\services\fortune_calendar_service.dart:8:16 - unused_field
+warning - The value of the local variable 'yearGanJi' isn't used -
+       lib\features\calendar\services\fortune_calendar_service.dart:16:11 - unused_local_variable
+warning - The value of the local variable 'monthGanJi' isn't used -
+       lib\features\calendar\services\fortune_calendar_service.dart:17:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_input_screen.dart:117:60 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_input_screen.dart:150:68 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_input_screen.dart:154:68 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_input_screen.dart:223:60 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_input_screen.dart:225:67 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_result_screen.dart:51:56 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_result_screen.dart:70:47 - deprecated_member_use        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\compatibility\compatibility_result_screen.dart:88:66 - deprecated_member_use        
+warning - Unused import: 'dart:math' - lib\features\compatibility\services\compatibility_service.dart:2:8 -
+       unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\dream\dream_search_screen.dart:62:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -
+          lib\features\dream\dream_search_screen.dart:66:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\dream\dream_search_screen.dart:162:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\dream\dream_search_screen.dart:172:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\dream\dream_search_screen.dart:194:37 - deprecated_member_use
+warning - Unused import: 'dart:math' - lib\features\fun\fun_content_screen.dart:4:8 - unused_import        
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:87:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:88:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:92:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:113:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:138:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:164:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:174:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:216:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:217:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:221:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\fun\fun_content_screen.dart:248:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\daily_fortune_view.dart:89:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\daily_fortune_view.dart:102:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -
+          lib\features\home\daily_fortune_view.dart:151:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\daily_fortune_view.dart:225:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\daily_fortune_view.dart:238:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\detailed_fortune_screen.dart:135:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\detailed_fortune_screen.dart:185:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\detailed_fortune_screen.dart:210:67 - deprecated_member_use
+warning - Unused import: 'package:app_project/features/home/daily_fortune_view.dart' -
+       lib\features\home\home_screen.dart:2:8 - unused_import
+warning - Unused import: 'package:app_project/features/tarot/tarot_screen.dart' -
+       lib\features\home\home_screen.dart:8:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:52:64 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:94:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:283:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:330:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:339:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:383:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:453:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:463:67 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:500:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\home\home_tab_screen.dart:509:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\more\more_screen.dart:106:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:73:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:142:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:143:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:148:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:178:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:192:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\name_analysis\name_analysis_screen.dart:215:52 - deprecated_member_use
+warning - Unused import: 'package:supabase_flutter/supabase_flutter.dart' -
+       lib\features\rewards\check_in_provider.dart:6:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -
+          lib\features\rewards\check_in_screen.dart:46:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:48:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:78:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:107:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:109:68 - deprecated_member_use
+warning - The value of the local variable 'firstDayOfMonth' isn't used -
+       lib\features\rewards\check_in_screen.dart:163:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:177:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:204:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\rewards\check_in_screen.dart:232:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\saju\saju_analysis_screen.dart:196:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\saju\saju_analysis_screen.dart:317:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\my_screen.dart:35:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\my_screen.dart:64:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\my_screen.dart:89:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\my_screen.dart:200:50 - deprecated_member_use
+warning - Unused import: 'package:go_router/go_router.dart' -
+       lib\features\settings\saju_settings_screen.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\saju_settings_screen.dart:118:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\saju_settings_screen.dart:119:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\saju_settings_screen.dart:125:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\saju_settings_screen.dart:175:48 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was
+          deprecated after v3.31.0-2.0.pre - lib\features\settings\saju_settings_screen.dart:180:9 -       
+          deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\saju_settings_screen.dart:186:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\settings\saju_settings_screen.dart:224:48 - deprecated_member_use
+warning - Unused import: 'package:app_project/core/theme/app_theme.dart' -
+       lib\features\storage\storage_screen.dart:1:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\storage\storage_screen.dart:38:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\store\store_screen.dart:82:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\tarot\tarot_result_screen.dart:58:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\tarot\tarot_result_screen.dart:59:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\tarot\tarot_result_screen.dart:97:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\tarot\tarot_result_screen.dart:113:56 - deprecated_member_use
+warning - Unused import: 'package:app_project/core/theme/app_theme.dart' -
+       lib\features\tarot\tarot_screen.dart:3:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\tarot\tarot_screen.dart:106:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -
+          lib\features\theme_fortune\theme_fortune_screen.dart:36:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\theme_fortune\theme_fortune_screen.dart:55:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\theme_fortune\theme_fortune_screen.dart:126:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\theme_fortune\theme_fortune_screen.dart:134:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:46:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:47:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:53:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:155:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:162:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:224:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:236:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:272:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:339:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\wallet\earn_candy_screen.dart:429:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:80:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:103:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:137:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:138:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:142:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:180:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:183:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss -   
+          lib\features\yearly_fortune\yearly_fortune_screen.dart:273:48 - deprecated_member_use
+
+130 issues found. (ran in 6.4s)
